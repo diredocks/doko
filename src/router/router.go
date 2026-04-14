@@ -5,6 +5,7 @@ import (
 	"doko/database"
 	"doko/handlers"
 	"doko/models"
+	"doko/services"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
@@ -17,4 +18,10 @@ func SetupRoutes(app *fiber.App) {
 	userHandler := handlers.NewUserHandler(userRepo)
 	user := api.Group("/user")
 	user.Post("/register", userHandler.Register)
+
+	bookRepo := models.NewBookRepository(database.DB)
+	bookService := services.NewBookService(userRepo, bookRepo)
+	bookHandler := handlers.NewBookHandler(bookService)
+	book := api.Group("/book")
+	book.Post("/", bookHandler.CreateBook)
 }
