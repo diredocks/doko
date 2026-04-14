@@ -8,6 +8,7 @@ type Book struct {
 	Title       string  `gorm:"not null" json:"title"`
 	Description string  `gorm:"not null" json:"description"`
 	Authors     []*User `gorm:"many2many:book_authors;" json:"authors"`
+	Tags        []*Tag  `gorm:"many2many:book_tags;" json:"tags"`
 }
 
 type BookRepository struct {
@@ -19,7 +20,7 @@ func NewBookRepository(db *gorm.DB) *BookRepository {
 }
 
 func (r *BookRepository) base() *gorm.DB {
-	return r.db.Model(&Book{}).Preload("Authors")
+	return r.db.Model(&Book{}).Preload("Authors").Preload("Tags")
 }
 
 func (r *BookRepository) Create(book *Book) error {

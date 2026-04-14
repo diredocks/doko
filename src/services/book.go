@@ -18,16 +18,18 @@ var (
 type BookService struct {
 	userRepo *models.UserRepository
 	bookRepo *models.BookRepository
+	tagRepo  *models.TagRepository
 }
 
-func NewBookService(userRepo *models.UserRepository, bookRepo *models.BookRepository) *BookService {
+func NewBookService(userRepo *models.UserRepository, bookRepo *models.BookRepository, tagRepo *models.TagRepository) *BookService {
 	return &BookService{
 		userRepo: userRepo,
 		bookRepo: bookRepo,
+		tagRepo:  tagRepo,
 	}
 }
 
-func (s *BookService) CreateBook(title, description string, authors []uint) (*models.Book, error) {
+func (s *BookService) CreateBook(title, description string, authors []uint, tags []string) (*models.Book, error) {
 	books, err := s.bookRepo.Find(title, authors)
 	if err != nil {
 		return nil, err
@@ -51,10 +53,20 @@ func (s *BookService) CreateBook(title, description string, authors []uint) (*mo
 		Authors = append(Authors, author)
 	}
 
+	var Tags []*models.Tag
+	for _, t := range tags {
+		tag, err := s.tagRepo.GetByName(t)
+		if err != nil {
+			return nil, err
+		}
+		Tags = append(Tags, tag)
+	}
+
 	book := &models.Book{
 		Title:       title,
 		Description: description,
 		Authors:     Authors,
+		Tags:        Tags,
 	}
 
 	err = s.bookRepo.Create(book)

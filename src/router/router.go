@@ -20,7 +20,8 @@ func SetupRoutes(app *fiber.App) {
 	user.Post("/register", userHandler.Register)
 
 	bookRepo := models.NewBookRepository(database.DB)
-	bookService := services.NewBookService(userRepo, bookRepo)
+	tagRepo := models.NewTagRepository(database.DB)
+	bookService := services.NewBookService(userRepo, bookRepo, tagRepo)
 	bookHandler := handlers.NewBookHandler(bookService)
 	book := api.Group("/book")
 	book.Post("/", bookHandler.CreateBook)

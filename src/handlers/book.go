@@ -13,6 +13,7 @@ type CreateBookRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Authors     []uint `json:"authors"`
+	Tags        []string `json:"tags"`
 }
 
 type CreateBookResponse struct {
@@ -26,6 +27,7 @@ type RecentBookResponse struct {
 	Title       string       `json:"title"`
 	Description string       `json:"description"`
 	Authors     []AuthorInfo `json:"authors"`
+	Tags        []string     `json:"tags"`
 }
 
 type AuthorInfo struct {
@@ -53,7 +55,7 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 		})
 	}
 
-	book, err := bh.bookService.CreateBook(in.Title, in.Description, in.Authors)
+	book, err := bh.bookService.CreateBook(in.Title, in.Description, in.Authors, in.Tags)
 	if err != nil {
 		if err == services.ErrBookExisted {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
@@ -118,18 +120,23 @@ func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 
 	var out []RecentBookResponse
 	for _, b := range books {
-		var authors []AuthorInfo
+		authors := []AuthorInfo{}
 		for _, a := range b.Authors {
 			authors = append(authors, AuthorInfo{
 				ID:   strconv.FormatUint(uint64(a.ID), 10),
 				Name: a.Username,
 			})
 		}
+		tags := []string{}
+		for _, t := range b.Tags {
+			tags = append(tags, t.Name)
+		}
 		out = append(out, RecentBookResponse{
 			ID:          strconv.FormatUint(uint64(b.ID), 10),
 			Title:       b.Title,
 			Description: b.Description,
 			Authors:     authors,
+			Tags:        tags,
 		})
 	}
 
