@@ -15,15 +15,18 @@ func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api", logger.New())
 
 	userRepo := models.NewUserRepository(database.DB)
+	bookRepo := models.NewBookRepository(database.DB)
+	tagRepo := models.NewTagRepository(database.DB)
+
+	bookService := services.NewBookService(userRepo, bookRepo, tagRepo)
+
 	userHandler := handlers.NewUserHandler(userRepo)
+	bookHandler := handlers.NewBookHandler(bookService)
+
 	user := api.Group("/user")
 	user.Post("/register", userHandler.Register)
 	user.Delete("/:id", userHandler.Delete)
 
-	bookRepo := models.NewBookRepository(database.DB)
-	tagRepo := models.NewTagRepository(database.DB)
-	bookService := services.NewBookService(userRepo, bookRepo, tagRepo)
-	bookHandler := handlers.NewBookHandler(bookService)
 	book := api.Group("/book")
 	book.Post("/", bookHandler.CreateBook)
 	book.Get("/recent", bookHandler.GetRecentBooks)
