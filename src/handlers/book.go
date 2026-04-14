@@ -27,16 +27,11 @@ type RecentBookRequest struct {
 }
 
 type RecentBookResponse struct {
-	ID          string       `json:"id"`
-	Title       string       `json:"title"`
-	Description string       `json:"description"`
-	Authors     []AuthorInfo `json:"authors"`
-	Tags        []string     `json:"tags"`
-}
-
-type AuthorInfo struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          uint     `json:"id"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Authors     []string `json:"authors"`
+	Tags        []string `json:"tags"`
 }
 
 type BookHandler struct {
@@ -123,19 +118,16 @@ func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 
 	var out []RecentBookResponse
 	for _, b := range books {
-		authors := []AuthorInfo{}
+		authors := []string{}
 		for _, a := range b.Authors {
-			authors = append(authors, AuthorInfo{
-				ID:   strconv.FormatUint(uint64(a.ID), 10),
-				Name: a.Username,
-			})
+			authors = append(authors, a.Username)
 		}
 		tags := []string{}
 		for _, t := range b.Tags {
 			tags = append(tags, t.Name)
 		}
 		out = append(out, RecentBookResponse{
-			ID:          strconv.FormatUint(uint64(b.ID), 10),
+			ID:          b.ID,
 			Title:       b.Title,
 			Description: b.Description,
 			Authors:     authors,
