@@ -10,9 +10,9 @@ import (
 )
 
 type CreateBookRequest struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Authors     []uint `json:"authors"`
+	Title       string   `json:"title" validate:"required"`
+	Description string   `json:"description" validate:"required"`
+	Authors     []uint   `json:"authors" validate:"required"`
 	Tags        []string `json:"tags"`
 }
 
