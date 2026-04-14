@@ -30,6 +30,32 @@ func NewUserHandler(userRepo *models.UserRepository) *UserHandler {
 	}
 }
 
+func (uh *UserHandler) Delete(c fiber.Ctx) error {
+	idStr := c.Params("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Invalid user id",
+			"data":    nil,
+		})
+	}
+
+	if err := uh.userRepo.Delete(uint(id)); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Error on deleting user",
+			"data":    nil,
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Success delete user",
+		"data":    nil,
+	})
+}
+
 func (uh *UserHandler) Register(c fiber.Ctx) error {
 	var in RegisterRequest
 	if err := c.Bind().Body(&in); err != nil {

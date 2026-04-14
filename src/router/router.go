@@ -18,6 +18,7 @@ func SetupRoutes(app *fiber.App) {
 	userHandler := handlers.NewUserHandler(userRepo)
 	user := api.Group("/user")
 	user.Post("/register", userHandler.Register)
+	user.Delete("/:id", userHandler.Delete)
 
 	bookRepo := models.NewBookRepository(database.DB)
 	tagRepo := models.NewTagRepository(database.DB)

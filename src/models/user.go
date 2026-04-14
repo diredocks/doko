@@ -63,11 +63,50 @@ func (r *UserRepository) GetByUsername(username string) (*User, error) {
 }
 
 func (r *UserRepository) Delete(id uint) error {
+	tx := r.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	var user User
-	if err := r.db.Where("id = ?", id).Delete(&user).Error; err != nil {
+	if err := tx.First(&user, "id = ?", id).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
-	return nil
+
+	var books []*Book
+	if err := tx.Model(&user).Association("Books").Find(&books); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	for _, book := range books {
+		var authors []*User
+		if err := tx.Model(book).Association("Authors").Find(&authors); err != nil {
+			tx.Rollback()
+			return err
+		}
+		if len(authors) <= 1 {
+			if err := tx.Delete(book).Error; err != nil {
+				tx.Rollback()
+				return err
+			}
+		} else {
+			if err := tx.Model(book).Association("Authors").Delete(&user); err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+
+	if err := tx.Delete(&user).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 func (r *UserRepository) Update(id uint, updateUser User) (*User, error) {
