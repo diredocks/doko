@@ -54,6 +54,14 @@ func (r *UserRepository) GetByID(id uint) (*User, error) {
 	return &user, nil
 }
 
+func (r *UserRepository) GetByIDs(ids []uint) ([]*User, error) {
+	users := []*User{}
+	if err := r.db.Where("id IN ?", ids).Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 func (r *UserRepository) GetByUsername(username string) (*User, error) {
 	var user User
 	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {

@@ -5,13 +5,10 @@ import (
 	"errors"
 
 	"doko/models"
-
-	"gorm.io/gorm"
 )
 
 var (
 	ErrBookExisted    = errors.New("book already existed")
-	ErrMissingAuthors = errors.New("missing authors")
 	ErrAuthorNotFound = errors.New("author not found")
 )
 
@@ -38,19 +35,12 @@ func (s *BookService) CreateBook(title, description string, authors []uint, tags
 		return nil, ErrBookExisted
 	}
 
-	if len(authors) < 1 {
-		return nil, ErrMissingAuthors
+	Authors, err := s.userRepo.GetByIDs(authors)
+	if err != nil {
+		return nil, err
 	}
-	var Authors []*models.User
-	for _, a := range authors {
-		author, err := s.userRepo.GetByID(a)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, ErrAuthorNotFound
-			}
-			return nil, err
-		}
-		Authors = append(Authors, author)
+	if len(Authors) < 1 {
+		return nil, ErrAuthorNotFound
 	}
 
 	var Tags []*models.Tag

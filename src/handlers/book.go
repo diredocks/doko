@@ -12,7 +12,7 @@ import (
 type CreateBookRequest struct {
 	Title       string   `json:"title" validate:"required"`
 	Description string   `json:"description" validate:"required"`
-	Authors     []uint   `json:"authors" validate:"required"`
+	Authors     []uint   `json:"authors" validate:"required,min=1"`
 	Tags        []string `json:"tags"`
 }
 
@@ -60,13 +60,6 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 				"status":  "error",
 				"message": "Book already existed",
-				"data":    nil,
-			})
-		}
-		if err == services.ErrMissingAuthors {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Missing authors",
 				"data":    nil,
 			})
 		}
