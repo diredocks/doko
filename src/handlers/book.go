@@ -2,8 +2,9 @@
 package handlers
 
 import (
-	"strconv"
+	"errors"
 
+	"doko/middleware"
 	"doko/services"
 
 	"github.com/gofiber/fiber/v3"
@@ -17,7 +18,7 @@ type CreateBookRequest struct {
 }
 
 type CreateBookResponse struct {
-	ID          string `json:"id"`
+	ID          uint   `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
@@ -47,38 +48,22 @@ func NewBookHandler(bookService *services.BookService) *BookHandler {
 func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 	var in CreateBookRequest
 	if err := c.Bind().Body(&in); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Error on create book request",
-			"data":    nil,
-		})
+		return middleware.NewValidationError(err)
 	}
 
 	book, err := bh.bookService.CreateBook(in.Title, in.Description, in.Authors, in.Tags)
 	if err != nil {
-		if err == services.ErrBookExisted {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Book already existed",
-				"data":    nil,
-			})
+		if errors.Is(err, services.ErrBookExisted) {
+			return middleware.NewAppError(fiber.StatusConflict, "Book already existed", err)
 		}
-		if err == services.ErrAuthorNotFound {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"status":  "error",
-				"message": "Author not found",
-				"data":    nil,
-			})
+		if errors.Is(err, services.ErrAuthorNotFound) {
+			return middleware.NewAppError(fiber.StatusBadRequest, "Author not found", err)
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Error on creating book",
-			"data":    nil,
-		})
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on creating book", err)
 	}
 
 	newBook := CreateBookResponse{
-		ID:          strconv.FormatUint(uint64(book.ID), 10),
+		ID:          book.ID,
 		Title:       book.Title,
 		Description: book.Description,
 	}
@@ -93,20 +78,12 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 	var in RecentBookRequest
 	if err := c.Bind().URI(&in); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Param limit should be an integer >= 1",
-			"data":    nil,
-		})
+		return middleware.NewAppError(fiber.StatusBadRequest, "Param limit should be an integer >= 1", err)
 	}
 
 	books, err := bh.bookService.GetRecentBooks(in.Limit)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Error on fetching recent books",
-			"data":    nil,
-		})
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on fetching recent books", err)
 	}
 
 	var out []RecentBookResponse

@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"doko/database"
+	"doko/middleware"
 	"doko/router"
 	"doko/utils"
 
@@ -14,7 +15,10 @@ import (
 func main() {
 	app := fiber.New(fiber.Config{
 		StructValidator: &utils.StructValidator{Validator: validator.New()},
+		ErrorHandler:    middleware.ErrorHandler,
 	})
+
+	app.Use(middleware.Recover())
 	// app.Use(cors.New())
 
 	database.ConnectDB()

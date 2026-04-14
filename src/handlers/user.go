@@ -3,6 +3,7 @@ package handlers
 import (
 	"strconv"
 
+	"doko/middleware"
 	"doko/models"
 
 	"github.com/gofiber/fiber/v3"
@@ -37,19 +38,11 @@ func NewUserHandler(userRepo *models.UserRepository) *UserHandler {
 func (uh *UserHandler) Delete(c fiber.Ctx) error {
 	var in DeleteUserRequest
 	if err := c.Bind().URI(&in); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Invalid user id",
-			"data":    nil,
-		})
+		return middleware.NewAppError(fiber.StatusBadRequest, "Invalid user id", err)
 	}
 
 	if err := uh.userRepo.Delete(in.ID); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Error on deleting user",
-			"data":    nil,
-		})
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on deleting user", err)
 	}
 
 	return c.JSON(fiber.Map{
@@ -62,20 +55,12 @@ func (uh *UserHandler) Delete(c fiber.Ctx) error {
 func (uh *UserHandler) Register(c fiber.Ctx) error {
 	var in RegisterUserRequest
 	if err := c.Bind().Body(&in); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Error on register request",
-			"data":    nil,
-		})
+		return middleware.NewValidationError(err)
 	}
 
 	user, err := uh.userRepo.Create(in.Email, in.Username, in.Password)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"status":  "error",
-			"message": "Error on registering user",
-			"data":    nil,
-		})
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on registering user", err)
 	}
 
 	newUser := RegisterUserResponse{
