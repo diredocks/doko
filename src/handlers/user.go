@@ -40,7 +40,7 @@ func (uh *UserHandler) Register(c fiber.Ctx) error {
 		})
 	}
 
-	user, err := uh.userRepo.CreateUser(in.Email, in.Username, in.Password)
+	user, err := uh.userRepo.Create(in.Email, in.Username, in.Password)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",

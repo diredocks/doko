@@ -26,8 +26,8 @@ func (r *BookRepository) Create(book *Book) error {
 	return r.db.Create(book).Error
 }
 
-func (r *BookRepository) GetAll() ([]Book, error) {
-	var books []Book
+func (r *BookRepository) GetAll() ([]*Book, error) {
+	var books []*Book
 	err := r.base().Find(&books).Error
 	return books, err
 }
@@ -41,8 +41,8 @@ func (r *BookRepository) GetByID(id uint) (*Book, error) {
 	return &book, nil
 }
 
-func (r *BookRepository) Find(title string, authors []uint) ([]Book, error) {
-	var books []Book
+func (r *BookRepository) Find(title string, authors []uint) ([]*Book, error) {
+	var books []*Book
 
 	db := r.base()
 
@@ -63,10 +63,6 @@ func (r *BookRepository) Find(title string, authors []uint) ([]Book, error) {
 
 	return books, nil
 }
-
-// func (r *BookRepository) Update(book *Book) error {
-// 	return r.db.Save(book).Error
-// }
 
 func (r *BookRepository) Delete(id string) error {
 	return r.db.Delete(&Book{}, "id = ?", id).Error

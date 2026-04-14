@@ -41,7 +41,7 @@ func (s *BookService) CreateBook(title, description string, authors []uint) (*mo
 	}
 	var Authors []*models.User
 	for _, a := range authors {
-		author, err := s.userRepo.GetUserByID(a)
+		author, err := s.userRepo.GetByID(a)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, ErrAuthorNotFound

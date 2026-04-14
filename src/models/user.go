@@ -24,7 +24,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) CreateUser(email, username, passwordHash string) (*User, error) {
+func (r *UserRepository) Create(email, username, passwordHash string) (*User, error) {
 	user := &User{
 		Email:    email,
 		Username: username,
@@ -38,7 +38,7 @@ func (r *UserRepository) CreateUser(email, username, passwordHash string) (*User
 	return user, nil
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (*User, error) {
+func (r *UserRepository) GetByEmail(email string) (*User, error) {
 	var user User
 	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetUserByID(id uint) (*User, error) {
+func (r *UserRepository) GetByID(id uint) (*User, error) {
 	var user User
 	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
@@ -54,7 +54,15 @@ func (r *UserRepository) GetUserByID(id uint) (*User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) DeleteUser(id uint) error {
+func (r *UserRepository) GetByUsername(username string) (*User, error) {
+	var user User
+	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) Delete(id uint) error {
 	var user User
 	if err := r.db.Where("id = ?", id).Delete(&user).Error; err != nil {
 		return err
@@ -62,7 +70,7 @@ func (r *UserRepository) DeleteUser(id uint) error {
 	return nil
 }
 
-func (r *UserRepository) UpdateUser(id uint, updateUser User) (*User, error) {
+func (r *UserRepository) Update(id uint, updateUser User) (*User, error) {
 	var user User
 	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
@@ -72,19 +80,6 @@ func (r *UserRepository) UpdateUser(id uint, updateUser User) (*User, error) {
 	user.Password = updateUser.Password
 	user.Nickname = updateUser.Nickname
 
-	if err := r.db.Save(&user).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
-func (r *UserRepository) UpdateNickname(id uint, nickname string) (*User, error) {
-	var user User
-	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
-		return nil, err
-	}
-
-	user.Nickname = nickname
 	if err := r.db.Save(&user).Error; err != nil {
 		return nil, err
 	}
