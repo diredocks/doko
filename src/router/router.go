@@ -24,4 +24,5 @@ func SetupRoutes(app *fiber.App) {
 	bookHandler := handlers.NewBookHandler(bookService)
 	book := api.Group("/book")
 	book.Post("/", bookHandler.CreateBook)
+	book.Get("/recent", bookHandler.GetRecentBooks)
 }

@@ -63,3 +63,10 @@ func (s *BookService) CreateBook(title, description string, authors []uint) (*mo
 	}
 	return book, nil
 }
+
+func (s *BookService) GetRecentBooks(limit int) ([]*models.Book, error) {
+	if limit < 1 {
+		limit = 10
+	}
+	return s.bookRepo.GetRecent(limit)
+}

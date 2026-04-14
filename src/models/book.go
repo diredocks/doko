@@ -41,6 +41,12 @@ func (r *BookRepository) GetByID(id uint) (*Book, error) {
 	return &book, nil
 }
 
+func (r *BookRepository) GetRecent(limit int) ([]*Book, error) {
+	var books []*Book
+	err := r.base().Order("created_at DESC").Limit(limit).Find(&books).Error
+	return books, err
+}
+
 func (r *BookRepository) Find(title string, authors []uint) ([]*Book, error) {
 	var books []*Book
 

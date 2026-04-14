@@ -21,6 +21,18 @@ type CreateBookResponse struct {
 	Description string `json:"description"`
 }
 
+type RecentBookResponse struct {
+	ID          string       `json:"id"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	Authors     []AuthorInfo `json:"authors"`
+}
+
+type AuthorInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type BookHandler struct {
 	bookService *services.BookService
 }
@@ -81,5 +93,49 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 		"status":  "success",
 		"message": "Success create book",
 		"data":    newBook,
+	})
+}
+
+func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
+	limitStr := c.Query("limit", "10")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Param limit should be an integer >= 1",
+			"data":    nil,
+		})
+	}
+
+	books, err := bh.bookService.GetRecentBooks(limit)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Error on fetching recent books",
+			"data":    nil,
+		})
+	}
+
+	var out []RecentBookResponse
+	for _, b := range books {
+		var authors []AuthorInfo
+		for _, a := range b.Authors {
+			authors = append(authors, AuthorInfo{
+				ID:   strconv.FormatUint(uint64(a.ID), 10),
+				Name: a.Username,
+			})
+		}
+		out = append(out, RecentBookResponse{
+			ID:          strconv.FormatUint(uint64(b.ID), 10),
+			Title:       b.Title,
+			Description: b.Description,
+			Authors:     authors,
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Success fetch recent books",
+		"data":    out,
 	})
 }
