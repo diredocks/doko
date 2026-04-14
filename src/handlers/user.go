@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"strconv"
 
 	"doko/models"
@@ -16,7 +15,7 @@ type RegisterRequest struct {
 }
 
 type RegisterResponse struct {
-	Id       string `json:"id"`
+	ID       string `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
 }
@@ -43,11 +42,15 @@ func (uh *UserHandler) Register(c fiber.Ctx) error {
 
 	user, err := uh.userRepo.CreateUser(in.Email, in.Username, in.Password)
 	if err != nil {
-		fmt.Printf("%s", err.Error())
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"status":  "error",
+			"message": "Error on registering user",
+			"data":    nil,
+		})
 	}
 
 	newUser := RegisterResponse{
-		Id:       strconv.FormatUint(uint64(user.ID), 10),
+		ID:       strconv.FormatUint(uint64(user.ID), 10),
 		Email:    user.Email,
 		Username: user.Username,
 	}
