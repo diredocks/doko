@@ -8,16 +8,20 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-type RegisterRequest struct {
+type RegisterUserRequest struct {
 	Email    string `json:"email" validate:"required,email"`
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required,min=6"`
 }
 
-type RegisterResponse struct {
+type RegisterUserResponse struct {
 	ID       string `json:"id"`
 	Email    string `json:"email"`
 	Username string `json:"username"`
+}
+
+type DeleteUserRequest struct {
+	ID uint `params:"id"`
 }
 
 type UserHandler struct {
@@ -31,9 +35,8 @@ func NewUserHandler(userRepo *models.UserRepository) *UserHandler {
 }
 
 func (uh *UserHandler) Delete(c fiber.Ctx) error {
-	idStr := c.Params("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
+	var in DeleteUserRequest
+	if err := c.Bind().URI(&in); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Invalid user id",
@@ -41,7 +44,7 @@ func (uh *UserHandler) Delete(c fiber.Ctx) error {
 		})
 	}
 
-	if err := uh.userRepo.Delete(uint(id)); err != nil {
+	if err := uh.userRepo.Delete(in.ID); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Error on deleting user",
@@ -57,7 +60,7 @@ func (uh *UserHandler) Delete(c fiber.Ctx) error {
 }
 
 func (uh *UserHandler) Register(c fiber.Ctx) error {
-	var in RegisterRequest
+	var in RegisterUserRequest
 	if err := c.Bind().Body(&in); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"status":  "error",
@@ -75,7 +78,7 @@ func (uh *UserHandler) Register(c fiber.Ctx) error {
 		})
 	}
 
-	newUser := RegisterResponse{
+	newUser := RegisterUserResponse{
 		ID:       strconv.FormatUint(uint64(user.ID), 10),
 		Email:    user.Email,
 		Username: user.Username,

@@ -22,6 +22,10 @@ type CreateBookResponse struct {
 	Description string `json:"description"`
 }
 
+type RecentBookRequest struct {
+	Limit int `uri:"limit"`
+}
+
 type RecentBookResponse struct {
 	ID          string       `json:"id"`
 	Title       string       `json:"title"`
@@ -99,9 +103,8 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 }
 
 func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
-	limitStr := c.Query("limit", "10")
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil {
+	var in RecentBookRequest
+	if err := c.Bind().URI(&in); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
 			"message": "Param limit should be an integer >= 1",
@@ -109,7 +112,7 @@ func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 		})
 	}
 
-	books, err := bh.bookService.GetRecentBooks(limit)
+	books, err := bh.bookService.GetRecentBooks(in.Limit)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
