@@ -26,7 +26,7 @@ func (r *TagRepository) Create(tag *Tag) error {
 
 func (r *TagRepository) GetAll() ([]*Tag, error) {
 	var tags []*Tag
-	err := r.base().Find(&tags).Error
+	err := r.db.Model(&Tag{}).Find(&tags).Error
 	return tags, err
 }
 

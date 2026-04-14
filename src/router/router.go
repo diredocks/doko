@@ -22,6 +22,7 @@ func SetupRoutes(app *fiber.App) {
 
 	userHandler := handlers.NewUserHandler(userRepo)
 	bookHandler := handlers.NewBookHandler(bookService)
+	tagHandler := handlers.NewTagHandler(tagRepo)
 
 	user := api.Group("/user")
 	user.Post("/register", userHandler.Register)
@@ -30,4 +31,7 @@ func SetupRoutes(app *fiber.App) {
 	book := api.Group("/book")
 	book.Post("/", bookHandler.CreateBook)
 	book.Get("/recent", bookHandler.GetRecentBooks)
+
+	tag := api.Group("/tag")
+	tag.Get("/", tagHandler.GetAllTags)
 }
