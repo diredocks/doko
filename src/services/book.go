@@ -27,7 +27,7 @@ func NewBookService(userRepo *models.UserRepository, bookRepo *models.BookReposi
 }
 
 func (s *BookService) CreateBook(title, description string, authors []uint, tags []string) (*models.Book, error) {
-	books, err := s.bookRepo.Find(title, authors)
+	books, err := s.bookRepo.Find(title, authors, []uint{})
 	if err != nil {
 		return nil, err
 	}

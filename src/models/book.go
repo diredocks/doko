@@ -48,7 +48,7 @@ func (r *BookRepository) GetRecent(limit int) ([]*Book, error) {
 	return books, err
 }
 
-func (r *BookRepository) Find(title string, authors []uint) ([]*Book, error) {
+func (r *BookRepository) Find(title string, authors []uint, tags []uint) ([]*Book, error) {
 	var books []*Book
 
 	db := r.base()
@@ -57,12 +57,27 @@ func (r *BookRepository) Find(title string, authors []uint) ([]*Book, error) {
 		db = db.Where("title = ?", title)
 	}
 
+	// matches any of the authors
 	if len(authors) > 0 {
-		db = db.Joins("JOIN book_authors ba ON ba.book_id = books.id")
-		db = db.Where("ba.user_id IN ?", authors)
+		sub := r.db.
+			Table("book_authors").
+			Select("book_id").
+			Where("user_id IN ?", authors)
+
+		db = db.Where("id IN (?)", sub)
 	}
 
-	db = db.Distinct()
+	// matches all of the tags
+	if len(tags) > 0 {
+		sub := r.db.
+			Table("book_tags").
+			Select("book_id").
+			Where("tag_id IN ?", tags).
+			Group("book_id").
+			Having("COUNT(DISTINCT tag_id) = ?", len(tags))
+
+		db = db.Where("books.id IN (?)", sub)
+	}
 
 	if err := db.Find(&books).Error; err != nil {
 		return nil, err
