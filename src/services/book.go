@@ -6,12 +6,15 @@ import (
 	"strings"
 
 	"doko/models"
+
+	"gorm.io/gorm"
 )
 
 var (
-	ErrBookExisted    = errors.New("book already existed")
-	ErrAuthorNotFound = errors.New("author not found")
-	ErrBookNotFound   = errors.New("book not found")
+	ErrBookExisted     = errors.New("book already existed")
+	ErrAuthorNotFound  = errors.New("author not found")
+	ErrBookNotFound    = errors.New("book not found")
+	ErrChapterNotFound = errors.New("chapter not found")
 )
 
 type BookService struct {
@@ -75,7 +78,11 @@ func (s *BookService) GetRecentBooks(limit int) ([]*models.Book, error) {
 }
 
 func (s *BookService) GetBook(id uint) (*models.Book, error) {
-	return s.bookRepo.GetByID(id)
+	book, err := s.bookRepo.GetByID(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrBookNotFound
+	}
+	return book, err
 }
 
 func (s *BookService) DeleteBook(id uint) error {
@@ -87,6 +94,14 @@ func (s *BookService) DeleteBook(id uint) error {
 		return ErrBookNotFound
 	}
 	return nil
+}
+
+func (s *BookService) GetChapter(id uint) (*models.Chapter, error) {
+	chapter, err := s.chapterRepo.GetByID(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrChapterNotFound
+	}
+	return chapter, err
 }
 
 func (s *BookService) CreateChapter(bookID uint, title, content string, order int) (*models.Chapter, error) {

@@ -69,6 +69,18 @@ type CreateChapterResponse struct {
 	Order   int    `json:"order"`
 }
 
+type GetChapterRequest struct {
+	ID uint `uri:"id" validate:"required"`
+}
+
+type GetChapterResponse struct {
+	ID      uint   `json:"id"`
+	BookID  uint   `json:"book_id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Order   int    `json:"order"`
+}
+
 type BookHandler struct {
 	bookService *services.BookService
 }
@@ -229,5 +241,34 @@ func (bh *BookHandler) GetBook(c fiber.Ctx) error {
 		"status":  "success",
 		"message": "Success fetch book",
 		"data":    toBookResponse(book),
+	})
+}
+
+func (bh *BookHandler) GetChapter(c fiber.Ctx) error {
+	var in GetChapterRequest
+	if err := c.Bind().URI(&in); err != nil {
+		return middleware.NewValidationError(err)
+	}
+
+	chapter, err := bh.bookService.GetChapter(in.ID)
+	if err != nil {
+		if errors.Is(err, services.ErrChapterNotFound) {
+			return middleware.NewAppError(fiber.StatusNotFound, "Chapter not found", err)
+		}
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on fetching chapter", err)
+	}
+
+	out := GetChapterResponse{
+		ID:      chapter.ID,
+		BookID:  chapter.BookID,
+		Title:   chapter.Title,
+		Content: chapter.Content,
+		Order:   chapter.Order,
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Success fetch chapter",
+		"data":    out,
 	})
 }
