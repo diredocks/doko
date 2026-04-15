@@ -45,10 +45,9 @@ func (uh *UserHandler) Delete(c fiber.Ctx) error {
 		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on deleting user", err)
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success delete user",
-		"data":    nil,
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success delete user",
 	})
 }
 
@@ -69,9 +68,9 @@ func (uh *UserHandler) Register(c fiber.Ctx) error {
 		Username: user.Username,
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success register",
-		"data":    newUser,
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success register",
+		Data:    newUser,
 	})
 }

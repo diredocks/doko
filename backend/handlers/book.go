@@ -114,10 +114,10 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 		Description: book.Description,
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success create book",
-		"data":    newBook,
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success create book",
+		Data:    newBook,
 	})
 }
 
@@ -147,10 +147,10 @@ func (bh *BookHandler) CreateChapter(c fiber.Ctx) error {
 		Order:   chapter.Order,
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success create chapter",
-		"data":    out,
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success create chapter",
+		Data:    out,
 	})
 }
 
@@ -167,9 +167,9 @@ func (bh *BookHandler) DeleteBook(c fiber.Ctx) error {
 		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on deleting book", err)
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success delete book",
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success delete book",
 	})
 }
 
@@ -216,10 +216,10 @@ func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 		out = append(out, toBookResponse(b))
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success fetch recent books",
-		"data":    out,
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success fetch recent books",
+		Data:    out,
 	})
 }
 
@@ -237,10 +237,10 @@ func (bh *BookHandler) GetBook(c fiber.Ctx) error {
 		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on fetching book", err)
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success fetch book",
-		"data":    toBookResponse(book),
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success fetch book",
+		Data:    toBookResponse(book),
 	})
 }
 
@@ -266,9 +266,9 @@ func (bh *BookHandler) GetChapter(c fiber.Ctx) error {
 		Order:   chapter.Order,
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success fetch chapter",
-		"data":    out,
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success fetch chapter",
+		Data:    out,
 	})
 }

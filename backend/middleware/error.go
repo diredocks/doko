@@ -98,7 +98,7 @@ func respond(c fiber.Ctx, code int, message string, data any) error {
 	}
 
 	payload := fiber.Map{
-		"status":  "error",
+		"success": false,
 		"message": message,
 	}
 	if data != nil {

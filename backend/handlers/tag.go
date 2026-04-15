@@ -36,9 +36,9 @@ func (th *TagHandler) GetAllTags(c fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Success fetch tags",
-		"data":    out,
+	return c.JSON(Response{
+		Success: true,
+		Message: "Success fetch tags",
+		Data:    out,
 	})
 }
