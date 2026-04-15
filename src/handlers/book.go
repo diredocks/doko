@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"doko/middleware"
+	"doko/models"
 	"doko/services"
 
 	"github.com/gofiber/fiber/v3"
@@ -31,12 +32,23 @@ type RecentBookRequest struct {
 	Limit int `uri:"limit,default:10" validate:"min=1"`
 }
 
-type RecentBookResponse struct {
-	ID          uint     `json:"id"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Authors     []string `json:"authors"`
-	Tags        []string `json:"tags"`
+type GetBookRequest struct {
+	ID uint `uri:"id" validate:"required"`
+}
+
+type ChapterSummary struct {
+	ID    uint   `json:"id"`
+	Title string `json:"title"`
+	Order int    `json:"order"`
+}
+
+type BookResponse struct {
+	ID          uint             `json:"id"`
+	Title       string           `json:"title"`
+	Description string           `json:"description"`
+	Authors     []string         `json:"authors"`
+	Tags        []string         `json:"tags"`
+	Chapters    []ChapterSummary `json:"chapters"`
 }
 
 type CreateChapterRequest struct {
@@ -142,6 +154,33 @@ func (bh *BookHandler) DeleteBook(c fiber.Ctx) error {
 	})
 }
 
+func toBookResponse(book *models.Book) *BookResponse {
+	authors := make([]string, 0, len(book.Authors))
+	for _, a := range book.Authors {
+		authors = append(authors, a.Username)
+	}
+	tags := make([]string, 0, len(book.Tags))
+	for _, t := range book.Tags {
+		tags = append(tags, t.Name)
+	}
+	chapters := make([]ChapterSummary, 0, len(book.Chapters))
+	for _, ch := range book.Chapters {
+		chapters = append(chapters, ChapterSummary{
+			ID:    ch.ID,
+			Title: ch.Title,
+			Order: ch.Order,
+		})
+	}
+	return &BookResponse{
+		ID:          book.ID,
+		Title:       book.Title,
+		Description: book.Description,
+		Authors:     authors,
+		Tags:        tags,
+		Chapters:    chapters,
+	}
+}
+
 func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 	var in RecentBookRequest
 	if err := c.Bind().URI(&in); err != nil {
@@ -153,28 +192,35 @@ func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on fetching recent books", err)
 	}
 
-	out := []RecentBookResponse{}
+	out := []*BookResponse{}
 	for _, b := range books {
-		authors := []string{}
-		for _, a := range b.Authors {
-			authors = append(authors, a.Username)
-		}
-		tags := []string{}
-		for _, t := range b.Tags {
-			tags = append(tags, t.Name)
-		}
-		out = append(out, RecentBookResponse{
-			ID:          b.ID,
-			Title:       b.Title,
-			Description: b.Description,
-			Authors:     authors,
-			Tags:        tags,
-		})
+		out = append(out, toBookResponse(b))
 	}
 
 	return c.JSON(fiber.Map{
 		"status":  "success",
 		"message": "Success fetch recent books",
 		"data":    out,
+	})
+}
+
+func (bh *BookHandler) GetBook(c fiber.Ctx) error {
+	var in GetBookRequest
+	if err := c.Bind().URI(&in); err != nil {
+		return middleware.NewValidationError(err)
+	}
+
+	book, err := bh.bookService.GetBook(in.ID)
+	if err != nil {
+		if errors.Is(err, services.ErrBookNotFound) {
+			return middleware.NewAppError(fiber.StatusNotFound, "Book not found", err)
+		}
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on fetching book", err)
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Success fetch book",
+		"data":    toBookResponse(book),
 	})
 }

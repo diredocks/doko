@@ -74,6 +74,10 @@ func (s *BookService) GetRecentBooks(limit int) ([]*models.Book, error) {
 	return s.bookRepo.GetRecent(limit)
 }
 
+func (s *BookService) GetBook(id uint) (*models.Book, error) {
+	return s.bookRepo.GetByID(id)
+}
+
 func (s *BookService) DeleteBook(id uint) error {
 	n, err := s.bookRepo.Delete(id)
 	if err != nil {
