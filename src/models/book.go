@@ -87,6 +87,30 @@ func (r *BookRepository) Find(title string, authors []uint, tags []uint) ([]*Boo
 	return books, nil
 }
 
-func (r *BookRepository) Delete(id string) error {
-	return r.db.Delete(&Book{}, "id = ?", id).Error
+func (r *BookRepository) Delete(id uint) (int64, error) {
+	book := Book{Model: gorm.Model{ID: id}}
+
+	tx := r.db.Begin()
+
+	if err := tx.Model(&book).Association("Authors").Clear(); err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+	if err := tx.Model(&book).Association("Tags").Clear(); err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	if err := tx.Where("book_id = ?", id).Delete(&Chapter{}).Error; err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	result := tx.Delete(&book)
+	if result.Error != nil {
+		tx.Rollback()
+		return 0, result.Error
+	}
+
+	return result.RowsAffected, tx.Commit().Error
 }

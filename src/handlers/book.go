@@ -23,6 +23,10 @@ type CreateBookResponse struct {
 	Description string `json:"description"`
 }
 
+type DeleteBookRequest struct {
+	ID uint `uri:"id" validate:"required"`
+}
+
 type RecentBookRequest struct {
 	Limit int `uri:"limit,default:10" validate:"min=1"`
 }

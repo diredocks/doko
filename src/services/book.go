@@ -74,6 +74,17 @@ func (s *BookService) GetRecentBooks(limit int) ([]*models.Book, error) {
 	return s.bookRepo.GetRecent(limit)
 }
 
+func (s *BookService) DeleteBook(id uint) error {
+	n, err := s.bookRepo.Delete(id)
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return ErrBookNotFound
+	}
+	return nil
+}
+
 func (s *BookService) CreateChapter(bookID uint, title, content string, order int) (*models.Chapter, error) {
 	chapter := &models.Chapter{
 		BookID:  bookID,
