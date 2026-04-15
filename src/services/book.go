@@ -27,20 +27,20 @@ func NewBookService(userRepo *models.UserRepository, bookRepo *models.BookReposi
 }
 
 func (s *BookService) CreateBook(title, description string, authors []uint, tags []string) (*models.Book, error) {
-	books, err := s.bookRepo.Find(title, authors, []uint{})
-	if err != nil {
-		return nil, err
-	}
-	if len(books) > 0 {
-		return nil, ErrBookExisted
-	}
-
 	Authors, err := s.userRepo.GetByIDs(authors)
 	if err != nil {
 		return nil, err
 	}
 	if len(Authors) < 1 {
 		return nil, ErrAuthorNotFound
+	}
+
+	books, err := s.bookRepo.Find(title, authors, []uint{})
+	if err != nil {
+		return nil, err
+	}
+	if len(books) > 0 {
+		return nil, ErrBookExisted
 	}
 
 	var Tags []*models.Tag
@@ -67,8 +67,5 @@ func (s *BookService) CreateBook(title, description string, authors []uint, tags
 }
 
 func (s *BookService) GetRecentBooks(limit int) ([]*models.Book, error) {
-	if limit < 1 {
-		limit = 10
-	}
 	return s.bookRepo.GetRecent(limit)
 }

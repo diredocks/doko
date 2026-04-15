@@ -24,7 +24,7 @@ type CreateBookResponse struct {
 }
 
 type RecentBookRequest struct {
-	Limit int `uri:"limit"`
+	Limit int `uri:"limit,default:10" validate:"min=1"`
 }
 
 type RecentBookResponse struct {
@@ -78,7 +78,7 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 	var in RecentBookRequest
 	if err := c.Bind().URI(&in); err != nil {
-		return middleware.NewAppError(fiber.StatusBadRequest, "Param limit should be an integer >= 1", err)
+		return middleware.NewValidationError(err)
 	}
 
 	books, err := bh.bookService.GetRecentBooks(in.Limit)
@@ -86,7 +86,7 @@ func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on fetching recent books", err)
 	}
 
-	var out []RecentBookResponse
+	out := []RecentBookResponse{}
 	for _, b := range books {
 		authors := []string{}
 		for _, a := range b.Authors {

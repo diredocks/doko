@@ -22,7 +22,7 @@ type RegisterUserResponse struct {
 }
 
 type DeleteUserRequest struct {
-	ID uint `params:"id"`
+	ID uint `params:"id" validate:"required"`
 }
 
 type UserHandler struct {
@@ -38,7 +38,7 @@ func NewUserHandler(userRepo *models.UserRepository) *UserHandler {
 func (uh *UserHandler) Delete(c fiber.Ctx) error {
 	var in DeleteUserRequest
 	if err := c.Bind().URI(&in); err != nil {
-		return middleware.NewAppError(fiber.StatusBadRequest, "Invalid user id", err)
+		return middleware.NewValidationError(err)
 	}
 
 	if err := uh.userRepo.Delete(in.ID); err != nil {

@@ -30,7 +30,7 @@ func SetupRoutes(app *fiber.App) {
 
 	book := api.Group("/book")
 	book.Post("/", bookHandler.CreateBook)
-	book.Get("/recent", bookHandler.GetRecentBooks)
+	book.Get("/recent/:limit", bookHandler.GetRecentBooks)
 
 	tag := api.Group("/tag")
 	tag.Get("/", tagHandler.GetAllTags)
