@@ -17,8 +17,9 @@ func SetupRoutes(app *fiber.App) {
 	userRepo := models.NewUserRepository(database.DB)
 	bookRepo := models.NewBookRepository(database.DB)
 	tagRepo := models.NewTagRepository(database.DB)
+	chapterRepo := models.NewChapterRepository(database.DB)
 
-	bookService := services.NewBookService(userRepo, bookRepo, tagRepo)
+	bookService := services.NewBookService(userRepo, bookRepo, tagRepo, chapterRepo)
 
 	userHandler := handlers.NewUserHandler(userRepo)
 	bookHandler := handlers.NewBookHandler(bookService)
@@ -30,6 +31,7 @@ func SetupRoutes(app *fiber.App) {
 
 	book := api.Group("/book")
 	book.Post("/", bookHandler.CreateBook)
+	book.Post("/chapter", bookHandler.CreateChapter)
 	book.Get("/recent/:limit", bookHandler.GetRecentBooks)
 
 	tag := api.Group("/tag")

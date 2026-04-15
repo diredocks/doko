@@ -35,6 +35,21 @@ type RecentBookResponse struct {
 	Tags        []string `json:"tags"`
 }
 
+type CreateChapterRequest struct {
+	BookID  uint   `json:"book_id" validate:"required"`
+	Title   string `json:"title" validate:"required"`
+	Content string `json:"content" validate:"required"`
+	Order   int    `json:"order" validate:"required"`
+}
+
+type CreateChapterResponse struct {
+	ID      uint   `json:"id"`
+	BookID  uint   `json:"book_id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	Order   int    `json:"order"`
+}
+
 type BookHandler struct {
 	bookService *services.BookService
 }
@@ -72,6 +87,54 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 		"status":  "success",
 		"message": "Success create book",
 		"data":    newBook,
+	})
+}
+
+func (bh *BookHandler) CreateChapter(c fiber.Ctx) error {
+	var in CreateChapterRequest
+	if err := c.Bind().Body(&in); err != nil {
+		return middleware.NewValidationError(err)
+	}
+
+	chapter, err := bh.bookService.CreateChapter(in.BookID, in.Title, in.Content, in.Order)
+	if err != nil {
+		if errors.Is(err, services.ErrBookNotFound) {
+			return middleware.NewAppError(fiber.StatusNotFound, "Book not found", err)
+		}
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on creating chapter", err)
+	}
+
+	out := CreateChapterResponse{
+		ID:      chapter.ID,
+		BookID:  chapter.BookID,
+		Title:   chapter.Title,
+		Content: chapter.Content,
+		Order:   chapter.Order,
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Success create chapter",
+		"data":    out,
+	})
+}
+
+func (bh *BookHandler) DeleteBook(c fiber.Ctx) error {
+	var in DeleteBookRequest
+	if err := c.Bind().URI(&in); err != nil {
+		return middleware.NewValidationError(err)
+	}
+
+	if err := bh.bookService.DeleteBook(in.ID); err != nil {
+		if errors.Is(err, services.ErrBookNotFound) {
+			return middleware.NewAppError(fiber.StatusNotFound, "Book not found", err)
+		}
+		return middleware.NewAppError(fiber.StatusInternalServerError, "Error on deleting book", err)
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Success delete book",
 	})
 }
 

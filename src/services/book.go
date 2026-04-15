@@ -3,6 +3,7 @@ package services
 
 import (
 	"errors"
+	"strings"
 
 	"doko/models"
 )
@@ -10,19 +11,22 @@ import (
 var (
 	ErrBookExisted    = errors.New("book already existed")
 	ErrAuthorNotFound = errors.New("author not found")
+	ErrBookNotFound   = errors.New("book not found")
 )
 
 type BookService struct {
-	userRepo *models.UserRepository
-	bookRepo *models.BookRepository
-	tagRepo  *models.TagRepository
+	userRepo    *models.UserRepository
+	bookRepo    *models.BookRepository
+	tagRepo     *models.TagRepository
+	chapterRepo *models.ChapterRepository
 }
 
-func NewBookService(userRepo *models.UserRepository, bookRepo *models.BookRepository, tagRepo *models.TagRepository) *BookService {
+func NewBookService(userRepo *models.UserRepository, bookRepo *models.BookRepository, tagRepo *models.TagRepository, chapterRepo *models.ChapterRepository) *BookService {
 	return &BookService{
-		userRepo: userRepo,
-		bookRepo: bookRepo,
-		tagRepo:  tagRepo,
+		userRepo:    userRepo,
+		bookRepo:    bookRepo,
+		tagRepo:     tagRepo,
+		chapterRepo: chapterRepo,
 	}
 }
 
@@ -68,4 +72,21 @@ func (s *BookService) CreateBook(title, description string, authors []uint, tags
 
 func (s *BookService) GetRecentBooks(limit int) ([]*models.Book, error) {
 	return s.bookRepo.GetRecent(limit)
+}
+
+func (s *BookService) CreateChapter(bookID uint, title, content string, order int) (*models.Chapter, error) {
+	chapter := &models.Chapter{
+		BookID:  bookID,
+		Title:   title,
+		Content: content,
+		Order:   order,
+	}
+
+	if err := s.chapterRepo.Create(chapter); err != nil {
+		if strings.Contains(err.Error(), "FOREIGN KEY") {
+			return nil, ErrBookNotFound
+		}
+		return nil, err
+	}
+	return chapter, nil
 }

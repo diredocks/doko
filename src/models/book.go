@@ -5,10 +5,11 @@ import "gorm.io/gorm"
 
 type Book struct {
 	gorm.Model
-	Title       string  `gorm:"not null" json:"title"`
-	Description string  `gorm:"not null" json:"description"`
-	Authors     []*User `gorm:"many2many:book_authors;" json:"authors"`
-	Tags        []*Tag  `gorm:"many2many:book_tags;" json:"tags"`
+	Title       string     `gorm:"not null" json:"title"`
+	Description string     `gorm:"not null" json:"description"`
+	Authors     []*User    `gorm:"many2many:book_authors;" json:"authors"`
+	Tags        []*Tag     `gorm:"many2many:book_tags;" json:"tags"`
+	Chapters    []*Chapter `gorm:"foreignKey:BookID;constraint:OnDelete:CASCADE;" json:"chapters"`
 }
 
 type BookRepository struct {
@@ -20,7 +21,7 @@ func NewBookRepository(db *gorm.DB) *BookRepository {
 }
 
 func (r *BookRepository) base() *gorm.DB {
-	return r.db.Model(&Book{}).Preload("Authors").Preload("Tags")
+	return r.db.Model(&Book{}).Preload("Authors").Preload("Tags").Preload("Chapters")
 }
 
 func (r *BookRepository) Create(book *Book) error {
