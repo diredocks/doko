@@ -51,8 +51,11 @@ type BookResponse struct {
 	Chapters    []ChapterSummary `json:"chapters"`
 }
 
-type CreateChapterRequest struct {
-	BookID  uint   `json:"book_id" validate:"required"`
+type CreateChapterRequestURI struct {
+	BookID uint `uri:"id" validate:"required"`
+}
+
+type CreateChapterRequestBody struct {
 	Title   string `json:"title" validate:"required"`
 	Content string `json:"content" validate:"required"`
 	Order   int    `json:"order" validate:"required"`
@@ -107,12 +110,16 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 }
 
 func (bh *BookHandler) CreateChapter(c fiber.Ctx) error {
-	var in CreateChapterRequest
-	if err := c.Bind().Body(&in); err != nil {
+	var uri CreateChapterRequestURI
+	var body CreateChapterRequestBody
+	if err := c.Bind().Body(&body); err != nil {
+		return middleware.NewValidationError(err)
+	}
+	if err := c.Bind().URI(&uri); err != nil {
 		return middleware.NewValidationError(err)
 	}
 
-	chapter, err := bh.bookService.CreateChapter(in.BookID, in.Title, in.Content, in.Order)
+	chapter, err := bh.bookService.CreateChapter(uri.BookID, body.Title, body.Content, body.Order)
 	if err != nil {
 		if errors.Is(err, services.ErrBookNotFound) {
 			return middleware.NewAppError(fiber.StatusNotFound, "Book not found", err)
