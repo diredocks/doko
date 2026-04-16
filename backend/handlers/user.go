@@ -35,6 +35,16 @@ func NewUserHandler(userRepo *models.UserRepository) *UserHandler {
 	}
 }
 
+// Delete godoc
+// @Summary Delete user
+// @Description Delete a user by ID.
+// @Tags user
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} Response
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/user/{id} [delete]
 func (uh *UserHandler) Delete(c fiber.Ctx) error {
 	var in DeleteUserRequest
 	if err := c.Bind().URI(&in); err != nil {
@@ -51,6 +61,17 @@ func (uh *UserHandler) Delete(c fiber.Ctx) error {
 	})
 }
 
+// Register godoc
+// @Summary Register user
+// @Description Create a new user account.
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param request body RegisterUserRequest true "Register payload"
+// @Success 200 {object} Response{data=RegisterUserResponse}
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/user/register [post]
 func (uh *UserHandler) Register(c fiber.Ctx) error {
 	var in RegisterUserRequest
 	if err := c.Bind().Body(&in); err != nil {

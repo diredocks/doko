@@ -1,0 +1,5 @@
+run:
+    go run doko
+
+doc:
+    swag init

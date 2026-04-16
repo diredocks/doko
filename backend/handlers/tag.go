@@ -22,6 +22,14 @@ func NewTagHandler(tagRepo *models.TagRepository) *TagHandler {
 	}
 }
 
+// GetAllTags godoc
+// @Summary Get tags
+// @Description Get all tags.
+// @Tags tag
+// @Produce json
+// @Success 200 {object} Response{data=[]TagResponse}
+// @Failure 500 {object} ErrorResponse
+// @Router /api/tag/ [get]
 func (th *TagHandler) GetAllTags(c fiber.Ctx) error {
 	tags, err := th.tagRepo.GetAll()
 	if err != nil {

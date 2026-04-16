@@ -7,11 +7,14 @@ import (
 	"doko/models"
 	"doko/services"
 
+	swaggo "github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 func SetupRoutes(app *fiber.App) {
+	app.Get("/swagger/*", swaggo.HandlerDefault)
+
 	api := app.Group("/api", logger.New())
 
 	userRepo := models.NewUserRepository(database.DB)

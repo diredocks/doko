@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"doko/database"
+	_ "doko/docs"
 	"doko/middleware"
 	"doko/router"
 	"doko/utils"
@@ -12,6 +13,10 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
+// @title Doko API
+// @version 0.1
+// @description Doko backend API documentation.
+// @BasePath /
 func main() {
 	app := fiber.New(fiber.Config{
 		StructValidator: &utils.StructValidator{Validator: validator.New()},

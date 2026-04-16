@@ -91,6 +91,19 @@ func NewBookHandler(bookService *services.BookService) *BookHandler {
 	}
 }
 
+// CreateBook godoc
+// @Summary Create book
+// @Description Create a new book with authors and optional tags.
+// @Tags book
+// @Accept json
+// @Produce json
+// @Param request body CreateBookRequest true "Book payload"
+// @Success 200 {object} Response{data=CreateBookResponse}
+// @Failure 400 {object} ErrorResponse
+// @Failure 409 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/book/ [post]
 func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 	var in CreateBookRequest
 	if err := c.Bind().Body(&in); err != nil {
@@ -121,6 +134,19 @@ func (bh *BookHandler) CreateBook(c fiber.Ctx) error {
 	})
 }
 
+// CreateChapter godoc
+// @Summary Create chapter
+// @Description Create a chapter under a book.
+// @Tags book
+// @Accept json
+// @Produce json
+// @Param id path int true "Book ID"
+// @Param request body CreateChapterRequestBody true "Chapter payload"
+// @Success 200 {object} Response{data=CreateChapterResponse}
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/book/{id}/chapter [post]
 func (bh *BookHandler) CreateChapter(c fiber.Ctx) error {
 	var uri CreateChapterRequestURI
 	var body CreateChapterRequestBody
@@ -154,6 +180,17 @@ func (bh *BookHandler) CreateChapter(c fiber.Ctx) error {
 	})
 }
 
+// DeleteBook godoc
+// @Summary Delete book
+// @Description Delete a book by ID.
+// @Tags book
+// @Produce json
+// @Param id path int true "Book ID"
+// @Success 200 {object} Response
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/book/{id} [delete]
 func (bh *BookHandler) DeleteBook(c fiber.Ctx) error {
 	var in DeleteBookRequest
 	if err := c.Bind().URI(&in); err != nil {
@@ -200,6 +237,16 @@ func toBookResponse(book *models.Book) *BookResponse {
 	}
 }
 
+// GetRecentBooks godoc
+// @Summary Get recent books
+// @Description Get recently created books.
+// @Tags book
+// @Produce json
+// @Param limit path int true "Limit"
+// @Success 200 {object} Response{data=[]BookResponse}
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/book/recent/{limit} [get]
 func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 	var in RecentBookRequest
 	if err := c.Bind().URI(&in); err != nil {
@@ -223,6 +270,17 @@ func (bh *BookHandler) GetRecentBooks(c fiber.Ctx) error {
 	})
 }
 
+// GetBook godoc
+// @Summary Get book
+// @Description Get a book by ID.
+// @Tags book
+// @Produce json
+// @Param id path int true "Book ID"
+// @Success 200 {object} Response{data=BookResponse}
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/book/{id} [get]
 func (bh *BookHandler) GetBook(c fiber.Ctx) error {
 	var in GetBookRequest
 	if err := c.Bind().URI(&in); err != nil {
@@ -244,6 +302,17 @@ func (bh *BookHandler) GetBook(c fiber.Ctx) error {
 	})
 }
 
+// GetChapter godoc
+// @Summary Get chapter
+// @Description Get a chapter by ID.
+// @Tags book
+// @Produce json
+// @Param id path int true "Chapter ID"
+// @Success 200 {object} Response{data=GetChapterResponse}
+// @Failure 404 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/book/chapter/{id} [get]
 func (bh *BookHandler) GetChapter(c fiber.Ctx) error {
 	var in GetChapterRequest
 	if err := c.Bind().URI(&in); err != nil {
